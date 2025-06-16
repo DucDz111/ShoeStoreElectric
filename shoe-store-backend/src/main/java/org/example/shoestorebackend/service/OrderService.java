@@ -15,6 +15,7 @@ import org.example.shoestorebackend.repository.CartItemRepository; // Giả đ�
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class OrderService {
@@ -239,5 +240,23 @@ public class OrderService {
         order.setStatus(status);
         order.setUpdatedAt(LocalDateTime.now());
         return orderRepository.save(order);
+    }
+    @Transactional(readOnly = true)
+    public Optional<Order> getOrderByIdForAdmin(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Đơn hàng không tồn tại: " + orderId));
+
+        // Tải đầy đủ dữ liệu lazy-loaded
+        Hibernate.initialize(order.getOrderItems());
+        for (OrderItem item : order.getOrderItems()) {
+            Hibernate.initialize(item.getProduct());
+            Hibernate.initialize(item.getVariant());
+            if (item.getVariant() != null) {
+                Hibernate.initialize(item.getVariant().getSize());
+                Hibernate.initialize(item.getVariant().getColor());
+            }
+        }
+
+        return Optional.of(order);
     }
 }

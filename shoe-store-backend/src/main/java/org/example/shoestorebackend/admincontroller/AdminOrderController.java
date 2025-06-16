@@ -35,6 +35,21 @@ public class AdminOrderController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(orderDTOs);
     }
+    @GetMapping("/{id}")
+    @Transactional(readOnly = true)
+    public ResponseEntity<OrderDTO> getOrderDetails(@PathVariable Long id) {
+        try {
+            logger.info("Fetching order details for order id: " + id);
+            Order order = orderService.getOrderByIdForAdmin(id)
+                    .orElseThrow(() -> new RuntimeException("Đơn hàng không tồn tại: " + id));
+
+            OrderDTO orderDTO = convertToOrderDTO(order);
+            return ResponseEntity.ok(orderDTO);
+        } catch (RuntimeException e) {
+            logger.severe("Error fetching order details: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+    }
 
     // Hàm chuyển User -> UserDTO
     private UserDTO convertToUserDTO(User user) {
@@ -107,4 +122,5 @@ public class AdminOrderController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", e.getMessage()));
         }
     }
+
 }

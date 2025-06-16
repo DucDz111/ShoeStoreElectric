@@ -356,4 +356,5 @@ public class ProductService {
             throw new RuntimeException("Failed to fetch paged products: " + e.getMessage());
         }
     }
+
 }
