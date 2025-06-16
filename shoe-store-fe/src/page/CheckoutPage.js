@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import axios from "axios";
 
 const CheckoutPage = () => {
@@ -159,21 +160,30 @@ const CheckoutPage = () => {
 
       if (!response.ok) {
         let errorMessage = "Đã xảy ra lỗi không xác định.";
-  try {
-    const errorJson = await response.json();
-    console.error("CheckoutPage: Error response:", errorJson);
-    errorMessage = errorJson.message || errorMessage;
-  } catch (jsonError) {
-    const fallbackText = await response.text();
-    console.error("CheckoutPage: Fallback error text:", fallbackText);
-    errorMessage = fallbackText || errorMessage;
-  }
+        try {
+          const errorJson = await response.json();
+          console.error("CheckoutPage: Error response:", errorJson);
+          errorMessage = errorJson.message || errorMessage;
 
-  toast.error(`Có lỗi xảy ra khi thanh toán: ${errorMessage}`, {
-    position: "top-right",
-  });
-  return; // ⛔ Dừng lại tại đây, không tiếp tục xử lý nữa
-}
+          toast.error(errorMessage, {
+            position: "top-right",
+            autoClose: 6000,
+          });
+
+        } catch (jsonError) {
+          const fallbackText = await response.text();
+          console.error("CheckoutPage: Fallback error text:", fallbackText);
+          errorMessage = fallbackText || errorMessage;
+
+          toast.error(errorMessage, {
+            position: "top-right",
+            autoClose: 6000,
+          });
+        }
+
+        return; // ⛔ Không tiếp tục submit nếu có lỗi
+      }
+
 
       const responseData = await response.json();
       console.log("CheckoutPage: Response data:", responseData);
@@ -394,6 +404,7 @@ const CheckoutPage = () => {
           </div>
         </div>
       </main>
+      <ToastContainer />
     </div>
   );
 };
