@@ -22,6 +22,7 @@ import AdminUserPage from './page/AdminUserPage';
 import ProtectedRoute from './context/ProtectedRoute';
 import AdminEditProduct from './page/AdminEditProduct';
 import AdminRevenueDashboard from './page/AdminRevenueDashboard';
+import AdminOrderDetail from './page/AdminOrderDetail';
 
 // Tạo một component wrapper để sử dụng useAuth
 const AppContent = () => {
@@ -80,6 +81,14 @@ const AppContent = () => {
             element={
               <ProtectedRoute allowedRoles={['ADMIN']}>
                 <AdminRevenueDashboard/>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/orders/:orderId"
+            element={
+              <ProtectedRoute allowedRoles={['ADMIN']}>
+                <AdminOrderDetail/>
               </ProtectedRoute>
             }
           />

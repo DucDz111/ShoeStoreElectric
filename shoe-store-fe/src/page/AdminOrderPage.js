@@ -71,11 +71,9 @@ const AdminOrderPage = () => {
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
       );
-      // Cập nhật state và chuyển tab ngay lập tức, không phụ thuộc vào response
       setOrders(orders.map((order) => (order.id === orderId ? { ...order, status: newStatus } : order)));
       toast.success(`Đã cập nhật trạng thái thành công!`);
 
-      // Chuyển tab dựa trên trạng thái mới
       switch (newStatus) {
         case 'PROCESSING':
           setActiveTab('Vận chuyển');
@@ -94,14 +92,11 @@ const AdminOrderPage = () => {
       }
     } catch (err) {
       const errorMsg = err.response?.data?.error || (err.response?.status === 400 ? 'Lỗi server, vui lòng kiểm tra lại' : 'Cập nhật trạng thái thất bại');
-      // Chỉ hiển thị toast nếu lỗi không phải do serialization (400 nhưng backend đã xử lý)
       if (err.response?.status !== 400 || err.response?.data?.error) {
         toast.error(errorMsg);
       } else {
-        // Nếu 400 do serialization (backend đã cập nhật), vẫn coi là thành công
         setOrders(orders.map((order) => (order.id === orderId ? { ...order, status: newStatus } : order)));
         toast.success(`Đã cập nhật trạng thái thành công!`);
-
         switch (newStatus) {
           case 'PROCESSING':
             setActiveTab('Vận chuyển');
