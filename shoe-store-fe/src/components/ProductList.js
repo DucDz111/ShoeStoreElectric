@@ -9,6 +9,7 @@ const ProductList = () => {
   const [basketballShoes, setBasketballShoes] = useState([]);
   const [runningShoes, setRunningShoes] = useState([]);
   const [sneakerShoes, setSneakerShoes] = useState([]);
+  const [pickleballShoes, setPickleballShoes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -20,6 +21,7 @@ const ProductList = () => {
   const [totalBasketball, setTotalBasketball] = useState(0);
   const [totalRunning, setTotalRunning] = useState(0);
   const [totalSneaker, setTotalSneaker] = useState(0);
+  const [totalPickleball, setTotalPickleball] = useState(0);
 
   const navigate = useNavigate();
   const { isAuthenticated } = useContext(AuthContext);
@@ -76,6 +78,7 @@ const ProductList = () => {
           fetchProductsByCategory('Giày Bóng Rổ', setBasketballShoes, setTotalBasketball),
           fetchProductsByCategory('Giày Chạy Bộ', setRunningShoes, setTotalRunning),
           fetchProductsByCategory('Giày Thể Thao Sneaker', setSneakerShoes, setTotalSneaker),
+          fetchProductsByCategory('Giày Pickleball', setPickleballShoes, setTotalPickleball),
         ]);
       } finally {
         setLoading(false);
@@ -213,6 +216,7 @@ const ProductList = () => {
       {renderProductSection('Giày Bóng Rổ', basketballShoes, totalBasketball)}
       {renderProductSection('Giày Chạy Bộ', runningShoes, totalRunning)}
       {renderProductSection('Giày Thể Thao Sneaker', sneakerShoes, totalSneaker)}
+      {renderProductSection('Giày Pickleball', pickleballShoes, totalPickleball)}
       <ToastContainer />
 
       {isModalOpen && selectedProduct && (
