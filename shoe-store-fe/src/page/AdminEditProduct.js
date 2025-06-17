@@ -3,6 +3,14 @@ import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
+// Danh sách danh mục sẵn có
+const categoryOptions = [
+  'Giay The Thao Sneaker',
+  'Giay Bong Ro',
+  'Giay Chay Bo',
+  'Giay Pickleball',
+];
+
 const AdminEditProduct = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -15,7 +23,6 @@ const AdminEditProduct = () => {
   const [editingVariants, setEditingVariants] = useState([]);
 
   useEffect(() => {
-    // Đây là effect mới chỉ để log key trùng khi editingVariants thay đổi
     const keys = editingVariants.map(v => `${v.size}-${v.color}`);
     const duplicates = keys.filter((key, index) => keys.indexOf(key) !== index);
     if (duplicates.length > 0) {
@@ -58,7 +65,7 @@ const AdminEditProduct = () => {
       const token = localStorage.getItem('token');
       const productToUpdate = {
         ...product,
-        price: parseFloat(product.price),
+        price: parseFloat(product.price.replace(/\./g, '')), // Loại bỏ dấu chấm trước khi lưu
         sizes: editingSizes.map((size) => ({ size })),
         colors: editingColors.map((color) => ({ color })),
         variants: editingVariants.map((variant) => ({
@@ -111,17 +118,29 @@ const AdminEditProduct = () => {
       }
     });
   };
-  
 
   const handleColorChange = (color, checked) => {
     if (checked) {
-      if(!editingColors.includes(color)) {
+      if (!editingColors.includes(color)) {
         setEditingColors([...editingColors, color]);
       }
     } else {
       setEditingColors(editingColors.filter((c) => c !== color));
       setEditingVariants(editingVariants.filter((v) => v.color !== color));
     }
+  };
+
+  // Hàm định dạng giá tiền với dấu chấm hàng nghìn
+  const formatPrice = (value) => {
+    if (!value) return '';
+    const cleanedValue = value.replace(/\D/g, ''); // Loại bỏ tất cả ký tự không phải số
+    const number = parseFloat(cleanedValue) || 0;
+    return number.toLocaleString('vi-VN'); // Định dạng theo kiểu Việt Nam (dấu chấm)
+  };
+
+  const handlePriceChange = (e) => {
+    const rawValue = e.target.value;
+    setProduct({ ...product, price: formatPrice(rawValue) });
   };
 
   if (loading) return <div className="p-6 text-center">Đang tải...</div>;
@@ -157,11 +176,12 @@ const AdminEditProduct = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Giá (VNĐ)</label>
               <input
-                type="number"
+                type="text"
                 value={product.price}
-                onChange={(e) => setProduct({ ...product, price: e.target.value })}
+                onChange={handlePriceChange}
                 className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
+                placeholder="Nhập giá (ví dụ: 1000000)"
               />
             </div>
             <div>
@@ -191,13 +211,19 @@ const AdminEditProduct = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Danh mục</label>
-              <input
-                type="text"
-                value={product.category}
+              <select
+                value={product.category || ''}
                 onChange={(e) => setProduct({ ...product, category: e.target.value })}
                 className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
-              />
+              >
+                <option value="">Chọn danh mục</option>
+                {categoryOptions.map((category, index) => (
+                  <option key={index} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Giới tính</label>
@@ -211,23 +237,6 @@ const AdminEditProduct = () => {
                 <option value="nu">Nữ</option>
                 <option value="tre_em">Trẻ em</option>
               </select>
-            </div>
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Màu sắc</label>
-              <div className="flex gap-2 mb-2">
-                {['Đỏ', 'Trắng', 'Xanh', 'Vàng'].map((color) => (
-                  <label key={color} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      value={color}
-                      checked={editingColors.includes(color)}
-                      onChange={(e) => handleColorChange(color, e.target.checked)}
-                      className="mr-1"
-                    />
-                    {color}
-                  </label>
-                ))}
-              </div>
             </div>
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">Kích thước & Biến thể</label>
@@ -260,24 +269,20 @@ const AdminEditProduct = () => {
                                     const quantity = prompt(`Nhập số lượng cho size ${size} - màu ${color}:`);
                                     const quantityNum = parseInt(quantity, 10);
                                     if (quantity !== null && !isNaN(quantityNum) && quantityNum >= 0) {
-                                        setEditingVariants(prevVariants => {
-                                            const index = prevVariants.findIndex(v => v.size === size && v.color === color);
-                                            if (index !== -1) {
-                                              const updated = [...prevVariants];
-                                              updated[index] = { size, color, quantity: quantityNum };
-                                              return updated;
-                                            }
-                                            return [...prevVariants, { size, color, quantity: quantityNum }];
-                                          });
+                                      setEditingVariants(prevVariants => {
+                                        const index = prevVariants.findIndex(v => v.size === size && v.color === color);
+                                        if (index !== -1) {
+                                          const updated = [...prevVariants];
+                                          updated[index] = { size, color, quantity: quantityNum };
+                                          return updated;
                                         }
-                                      } else {
-                                        // Xoá biến thể khi uncheck
-                                        setEditingVariants(editingVariants.filter((v) => !(v.size === size && v.color === color)));
-                                      }
-                                    }}
-                                        
-                                    
-                                 
+                                        return [...prevVariants, { size, color, quantity: quantityNum }];
+                                      });
+                                    }
+                                  } else {
+                                    setEditingVariants(editingVariants.filter((v) => !(v.size === size && v.color === color)));
+                                  }
+                                }}
                                 className="mr-1"
                               />
                               {color}
@@ -320,6 +325,23 @@ const AdminEditProduct = () => {
                       <option key={size} value={size}>{size}</option>
                     ))}
                 </select>
+              </div>
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Màu sắc</label>
+              <div className="flex gap-2 mb-2">
+                {['Đỏ', 'Trắng', 'Xanh', 'Vàng'].map((color) => (
+                  <label key={color} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      value={color}
+                      checked={editingColors.includes(color)}
+                      onChange={(e) => handleColorChange(color, e.target.checked)}
+                      className="mr-1"
+                    />
+                    {color}
+                  </label>
+                ))}
               </div>
             </div>
             <div className="md:col-span-2">

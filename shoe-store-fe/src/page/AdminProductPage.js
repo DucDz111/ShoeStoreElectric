@@ -3,6 +3,14 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 
+// Danh sách danh mục sẵn có
+const categoryOptions = [
+  'Giay The Thao Sneaker',
+  'Giay Bong Ro',
+  'Giay Chay Bo',
+  'Giay Pickleball',
+];
+
 const AdminProductPage = () => {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
@@ -54,7 +62,7 @@ const AdminProductPage = () => {
 
       const productToAdd = {
         ...newProduct,
-        price: parseFloat(newProduct.price),
+        price: parseFloat(newProduct.price.replace(/\./g, '')), // Loại bỏ dấu chấm trước khi lưu
         sizes: newSizes.map((size) => ({ size })),
         colors: newColors.map((color) => ({ color })),
         variants: newVariants.map((variant) => ({
@@ -123,6 +131,19 @@ const AdminProductPage = () => {
       setNewColors(newColors.filter((c) => c !== color));
       setNewVariants(newVariants.filter((v) => v.color !== color));
     }
+  };
+
+  // Hàm định dạng giá tiền với dấu chấm hàng nghìn
+  const formatPrice = (value) => {
+    if (!value) return '';
+    const cleanedValue = value.replace(/\D/g, ''); // Loại bỏ tất cả ký tự không phải số
+    const number = parseFloat(cleanedValue) || 0;
+    return number.toLocaleString('vi-VN'); // Định dạng theo kiểu Việt Nam (dấu chấm)
+  };
+
+  const handlePriceChange = (e) => {
+    const rawValue = e.target.value;
+    setNewProduct({ ...newProduct, price: formatPrice(rawValue) });
   };
 
   return (
@@ -270,11 +291,12 @@ const AdminProductPage = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Giá (VNĐ)</label>
                     <input
-                      type="number"
+                      type="text"
                       value={newProduct.price}
-                      onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
+                      onChange={handlePriceChange}
                       className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       required
+                      placeholder="Nhập giá (ví dụ: 1000000)"
                     />
                   </div>
                   <div>
@@ -297,13 +319,19 @@ const AdminProductPage = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Danh mục</label>
-                    <input
-                      type="text"
+                    <select
                       value={newProduct.category}
                       onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
                       className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       required
-                    />
+                    >
+                      <option value="">Chọn danh mục</option>
+                      {categoryOptions.map((category, index) => (
+                        <option key={index} value={category}>
+                          {category}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Giới tính</label>
@@ -317,23 +345,6 @@ const AdminProductPage = () => {
                       <option value="nu">Nữ</option>
                       <option value="tre_em">Trẻ em</option>
                     </select>
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Màu sắc</label>
-                    <div className="flex gap-2 mb-2">
-                      {['Đỏ', 'Trắng', 'Xanh', 'Vàng'].map((color) => (
-                        <label key={color} className="flex items-center">
-                          <input
-                            type="checkbox"
-                            value={color}
-                            checked={newColors.includes(color)}
-                            onChange={(e) => handleColorChange(color, e.target.checked)}
-                            className="mr-1"
-                          />
-                          {color}
-                        </label>
-                      ))}
-                    </div>
                   </div>
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">Kích thước & Biến thể</label>
@@ -413,6 +424,23 @@ const AdminProductPage = () => {
                             <option key={size} value={size}>{size}</option>
                           ))}
                       </select>
+                    </div>
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Màu sắc</label>
+                    <div className="flex gap-2 mb-2">
+                      {['Đỏ', 'Trắng', 'Xanh', 'Vàng'].map((color) => (
+                        <label key={color} className="flex items-center">
+                          <input
+                            type="checkbox"
+                            value={color}
+                            checked={newColors.includes(color)}
+                            onChange={(e) => handleColorChange(color, e.target.checked)}
+                            className="mr-1"
+                          />
+                          {color}
+                        </label>
+                      ))}
                     </div>
                   </div>
                   <div className="md:col-span-2">
