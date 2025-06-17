@@ -141,13 +141,18 @@ const Header = () => {
           console.log("Dữ liệu tìm kiếm:", data);
           const productList = Array.isArray(data.content) ? data.content : (Array.isArray(data) ? data : []);
           const formattedSuggestions = productList
-            .map((product) => ({
-              title: product.name || "Sản phẩm không tên",
-              description: product.description || "Không có mô tả",
-              href: `/products/category/${product.category || "All"}?gender=${product.gender || "all"}`,
-            }))
-            .slice(0, 5);
+  .map((item) => {
+    const product = item.product; // ← LẤY ĐÚNG DỮ LIỆU Ở ĐÂY
+    return {
+      title: product?.name || "Sản phẩm không tên",
+      description: product?.description || "Không có mô tả",
+      href: `/products/category/${product?.category || "All"}?gender=${product?.gender || "all"}`
+    };
+  })
+  .slice(0, 5);
+
           setSuggestions(formattedSuggestions);
+          console.log("Gợi ý sẽ hiển thị:", formattedSuggestions); // ← THÊM NÀY
         })
         .catch((error) => {
           console.error("Error searching products:", error.message);
