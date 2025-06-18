@@ -64,8 +64,6 @@ public class OrderService {
                         " chỉ còn " + variant.getQuantity() + " sản phẩm.");
             }
 
-            // Cập nhật số lượng tồn kho (sẽ cập nhật sau khi lưu order)
-            variant.setQuantity(variant.getQuantity() - requestedQuantity);
         }
 
         double totalAmount = cartItems.stream()
