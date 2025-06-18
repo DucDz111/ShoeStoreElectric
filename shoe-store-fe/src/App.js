@@ -23,6 +23,7 @@ import ProtectedRoute from './context/ProtectedRoute';
 import AdminEditProduct from './page/AdminEditProduct';
 import AdminRevenueDashboard from './page/AdminRevenueDashboard';
 import AdminOrderDetail from './page/AdminOrderDetail';
+import PasswordChangePage from './page/PasswordChangePage';
 
 // Tạo một component wrapper để sử dụng useAuth
 const AppContent = () => {
@@ -44,6 +45,7 @@ const AppContent = () => {
           <Route path="/order" element={<OrderPage />} />
           <Route path="/address" element={<AddressPage />} />
           <Route path="/order/:id" element={<OrderDetail />} />
+          <Route path="/change-password" element={<PasswordChangePage/>}/>
           <Route
             path="/admin/products"
             element={

@@ -94,6 +94,9 @@ const ProfilePage = () => {
               <Link to="/address" className="hover:underline">Địa chỉ của tôi</Link>
             </li>
             <li>
+              <Link to="/change-password" className="hover:underline">Đổi mật khẩu</Link>
+            </li>
+            <li>
               <Link to="/logout" className="hover:underline">Đăng xuất</Link>
             </li>
           </ul>
