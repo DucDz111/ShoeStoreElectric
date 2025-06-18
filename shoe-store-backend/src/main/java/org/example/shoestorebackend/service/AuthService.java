@@ -1,5 +1,7 @@
 package org.example.shoestorebackend.service;
 
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import org.example.shoestorebackend.dto.LoginRequest;
 import org.example.shoestorebackend.dto.RegisterRequest;
 import org.example.shoestorebackend.entity.User;
@@ -25,13 +27,15 @@ public class AuthService {
     @Autowired
     private AuthenticationManager authenticationManager;
 
-    public User register(RegisterRequest request) {
+    @Transactional
+    public User register(@Valid RegisterRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Email already exists");
         }
         if (request.getPhone() != null && userRepository.findByPhone(request.getPhone()).isPresent()) {
             throw new RuntimeException("Phone already exists");
         }
+
         User user = new User();
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
@@ -40,7 +44,9 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
+        user.setRole(User.Role.USER); // Đặt vai trò mặc định là USER
 
+        // Validation đã được xử lý bởi @Valid trước khi lưu
         return userRepository.save(user);
     }
 
@@ -68,7 +74,9 @@ public class AuthService {
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
     }
 
-    public User updateUser(User user) {
+    @Transactional
+    public User updateUser(@Valid User user) {
+        // Validation đã được xử lý bởi @Valid trước khi lưu
         return userRepository.save(user);
     }
 
@@ -91,6 +99,7 @@ public class AuthService {
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
+
     // Thêm phương thức kiểm tra mật khẩu
     public boolean checkPassword(String rawPassword, String encodedPassword) {
         return passwordEncoder.matches(rawPassword, encodedPassword);

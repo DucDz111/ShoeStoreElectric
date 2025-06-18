@@ -14,6 +14,7 @@ import java.util.List;
 public class AdminUserController {
     @Autowired
     private AuthService authService;
+
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<User>> getAllUsers() {

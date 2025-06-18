@@ -36,9 +36,11 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request, BindingResult result) {
         if (result.hasErrors()) {
-            Map<String, String> errors = result.getFieldErrors().stream().collect(Collectors.toMap(
-                    fieldError -> fieldError.getField(), fieldError -> fieldError.getDefaultMessage()
-            ));
+            Map<String, String> errors = result.getFieldErrors().stream()
+                    .collect(Collectors.toMap(
+                            fieldError -> fieldError.getField(),
+                            fieldError -> fieldError.getDefaultMessage()
+                    ));
             return ResponseEntity.badRequest().body(errors);
         }
         try {

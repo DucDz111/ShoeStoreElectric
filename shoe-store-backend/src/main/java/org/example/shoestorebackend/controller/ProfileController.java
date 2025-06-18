@@ -1,5 +1,8 @@
 package org.example.shoestorebackend.controller;
 
+import jakarta.validation.Valid;
+import org.example.shoestorebackend.dto.ChangePasswordRequest;
+import org.example.shoestorebackend.dto.RegisterRequest;
 import org.example.shoestorebackend.entity.User;
 import org.example.shoestorebackend.service.AuthService;
 import org.example.shoestorebackend.util.JwtUtil;
@@ -37,7 +40,7 @@ public class ProfileController {
             response.put("fullName", user.getFirstName() + " " + user.getLastName());
             response.put("phone", user.getPhone() != null ? user.getPhone() : "Chưa cập nhật");
             response.put("address", user.getAddress() != null ? user.getAddress() : "Vietnam");
-            response.put("role", user.getRole().toString()); // Thêm role từ enum
+            response.put("role", user.getRole().toString());
             System.out.println("Profile Response: " + response);
 
             return ResponseEntity.ok(response);
@@ -50,7 +53,7 @@ public class ProfileController {
     @PutMapping
     public ResponseEntity<?> updateProfile(
             @RequestHeader("Authorization") String authorizationHeader,
-            @RequestBody Map<String, String> request) {
+            @Valid @RequestBody RegisterRequest request) {
         try {
             if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
                 return ResponseEntity.status(401).body(Map.of("message", "Unauthorized: Token không hợp lệ"));
@@ -62,15 +65,12 @@ public class ProfileController {
 
             User user = authService.getUserByEmail(email);
 
-            // Cập nhật địa chỉ và số điện thoại
-            String address = request.get("address");
-            String phone = request.get("phone");
-
-            if (address != null) {
-                user.setAddress(address);
+            // Cập nhật các trường từ request (chỉ sử dụng address và phone, bỏ qua các trường khác nếu gửi lên)
+            if (request.getAddress() != null) {
+                user.setAddress(request.getAddress());
             }
-            if (phone != null) {
-                user.setPhone(phone);
+            if (request.getPhone() != null) {
+                user.setPhone(request.getPhone());
             }
 
             // Lưu thay đổi vào database
@@ -81,7 +81,7 @@ public class ProfileController {
             response.put("fullName", user.getFirstName() + " " + user.getLastName());
             response.put("phone", user.getPhone() != null ? user.getPhone() : "Chưa cập nhật");
             response.put("address", user.getAddress() != null ? user.getAddress() : "Vietnam");
-            response.put("role", user.getRole().toString()); // Thêm role từ enum
+            response.put("role", user.getRole().toString());
             System.out.println("Update Profile Response: " + response);
 
             return ResponseEntity.ok(response);
@@ -90,10 +90,11 @@ public class ProfileController {
             return ResponseEntity.badRequest().body(Map.of("message", "Lỗi khi cập nhật thông tin hồ sơ: " + e.getMessage()));
         }
     }
-    
+
     @PostMapping("/change-password")
-        public ResponseEntity<?> changePassword(@RequestHeader("Authorization") String authorizationHeader,
-                                                @RequestBody Map<String, String> request) {
+    public ResponseEntity<?> changePassword(
+            @RequestHeader("Authorization") String authorizationHeader,
+            @Valid @RequestBody ChangePasswordRequest request) {
         try {
             if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
                 return ResponseEntity.status(401).body(Map.of("message", "Unauthorized: Token không hợp lệ"));
@@ -103,8 +104,8 @@ public class ProfileController {
             String email = jwtUtil.extractEmail(token);
             System.out.println("Change Password Request - Email: " + email);
 
-            String currentPassword = request.get("currentPassword");
-            String newPassword = request.get("newPassword");
+            String currentPassword = request.getCurrentPassword();
+            String newPassword = request.getNewPassword();
 
             if (currentPassword == null || newPassword == null) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Vui lòng cung cấp mật khẩu hiện tại và mật khẩu mới"));
@@ -126,7 +127,5 @@ public class ProfileController {
             System.out.println("Change Password error: " + e.getMessage());
             return ResponseEntity.badRequest().body(Map.of("message", "Lỗi khi đổi mật khẩu: " + e.getMessage()));
         }
-        }
-
-
+    }
 }

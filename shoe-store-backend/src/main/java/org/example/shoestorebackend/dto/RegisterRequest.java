@@ -1,4 +1,5 @@
 package org.example.shoestorebackend.dto;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -23,4 +24,7 @@ public class RegisterRequest {
     @NotBlank(message = "Password is required")
     @Size(min = 6, message = "Password must be at least 6 characters")
     private String password;
+
+    @Size(max = 255, message = "Address must not exceed 255 characters")
+    private String address;
 }
