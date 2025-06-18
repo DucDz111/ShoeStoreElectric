@@ -35,6 +35,8 @@ const CollectionPage = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [selectedSize, setSelectedSize] = useState('Chưa chọn');
   const [selectedColor, setSelectedColor] = useState('Chưa chọn');
+  const [filteredColorsForSize, setFilteredColorsForSize] = useState([]);
+
 
   const adultSizes = ['36', '37', '38', '39', '40', '41', '42', '43', '44', '45'];
   const kidSizes = ['33', '34', '35', '36', '37', '38', '39', '40'];
@@ -127,6 +129,21 @@ const CollectionPage = () => {
     };
     fetchProducts();
   }, [formattedCategory, gender, sortType, page, limit]);
+
+  useEffect(() => {
+    if (!selectedProduct || selectedSize === 'Chưa chọn') {
+      setFilteredColorsForSize([]);
+      return;
+    }
+  
+    const matchingColors = selectedProduct.variants
+      .filter(v => v.size === selectedSize && v.quantity > 0)
+      .map(v => v.color);
+  
+    const uniqueColors = [...new Set(matchingColors)];
+    setFilteredColorsForSize(uniqueColors);
+  }, [selectedSize, selectedProduct]);
+  
 
   useEffect(() => {
     let filtered = [...products];
@@ -353,28 +370,33 @@ const CollectionPage = () => {
             <div className="mb-4">
               <label className="block text-gray-700 mb-2">Kích thước:</label>
               <select
-                value={selectedSize}
-                onChange={(e) => setSelectedSize(e.target.value)}
-                className="w-full p-2 border rounded-lg"
-              >
-                <option value="Chưa chọn">Chưa chọn</option>
-                {selectedProduct.sizes.map(size => (
-                  <option key={size} value={size}>{size}</option>
-                ))}
-              </select>
+  value={selectedSize}
+  onChange={(e) => setSelectedSize(e.target.value)}
+  className="w-full p-2 border rounded-lg"
+>
+  <option value="Chưa chọn">Chưa chọn</option>
+  {selectedProduct.sizes.map(size => (
+    <option key={size} value={size}>{size}</option>
+  ))}
+</select>
             </div>
             <div className="mb-4">
               <label className="block text-gray-700 mb-2">Màu sắc:</label>
               <select
-                value={selectedColor}
-                onChange={(e) => setSelectedColor(e.target.value)}
-                className="w-full p-2 border rounded-lg"
-              >
-                <option value="Chưa chọn">Chưa chọn</option>
-                {selectedProduct.colors.map(color => (
-                  <option key={color} value={color}>{color}</option>
-                ))}
-              </select>
+  value={selectedColor}
+  onChange={(e) => setSelectedColor(e.target.value)}
+  className="w-full p-2 border rounded-lg"
+>
+  <option value="Chưa chọn">Chưa chọn</option>
+  {filteredColorsForSize.length > 0 ? (
+    filteredColorsForSize.map(color => (
+      <option key={color} value={color}>{color}</option>
+    ))
+  ) : (
+    <option disabled>Không có màu phù hợp</option>
+  )}
+</select>
+
             </div>
             <button
               onClick={handleAddToCart}

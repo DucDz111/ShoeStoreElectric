@@ -22,6 +22,8 @@ const ProductList = () => {
   const [totalRunning, setTotalRunning] = useState(0);
   const [totalSneaker, setTotalSneaker] = useState(0);
   const [totalPickleball, setTotalPickleball] = useState(0);
+  const [filteredColorsForSize, setFilteredColorsForSize] = useState([]);
+
 
   const navigate = useNavigate();
   const { isAuthenticated } = useContext(AuthContext);
@@ -86,6 +88,20 @@ const ProductList = () => {
     };
     fetchAllCategories();
   }, [page, limit]);
+
+  useEffect(() => {
+    if (!selectedProduct || selectedSize === 'Chưa chọn') {
+      setFilteredColorsForSize([]);
+      return;
+    }
+  
+    const matchingColors = selectedProduct.variants
+      .filter((v) => v.size === selectedSize && v.quantity > 0)
+      .map((v) => v.color);
+  
+    const uniqueColors = [...new Set(matchingColors)];
+    setFilteredColorsForSize(uniqueColors);
+  }, [selectedSize, selectedProduct]);
 
   const handleProductClick = (product) => {
     navigate(`/products/${product.id}`, { state: { product } });
@@ -220,47 +236,51 @@ const ProductList = () => {
       <ToastContainer />
 
       {isModalOpen && selectedProduct && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Chọn Kích thước và Màu sắc</h3>
-              <button onClick={closeModal} className="text-red-500 text-xl">×</button>
-            </div>
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-2">Kích thước:</label>
-              <select
-                value={selectedSize}
-                onChange={(e) => setSelectedSize(e.target.value)}
-                className="w-full p-2 border rounded-lg"
-              >
-                <option value="Chưa chọn">Chưa chọn</option>
-                {selectedProduct.sizes.map(size => (
-                  <option key={size} value={size}>{size}</option>
-                ))}
-              </select>
-            </div>
-            <div className="mb-4">
-              <label className="block text-gray-700 mb-2">Màu sắc:</label>
-              <select
-                value={selectedColor}
-                onChange={(e) => setSelectedColor(e.target.value)}
-                className="w-full p-2 border rounded-lg"
-              >
-                <option value="Chưa chọn">Chưa chọn</option>
-                {selectedProduct.colors.map(color => (
-                  <option key={color} value={color}>{color}</option>
-                ))}
-              </select>
-            </div>
-            <button
-              onClick={handleAddToCart}
-              className="w-full py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-            >
-              Xác nhận thêm vào giỏ hàng
-            </button>
-          </div>
-        </div>
-      )}
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white rounded-lg p-6 w-full max-w-md">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold">Chọn Kích thước và Màu sắc</h3>
+        <button onClick={closeModal} className="text-red-500 text-xl">×</button>
+      </div>
+      <div className="mb-4">
+        <label className="block text-gray-700 mb-2">Kích thước:</label>
+        <select
+          value={selectedSize}
+          onChange={(e) => setSelectedSize(e.target.value)}
+          className="w-full p-2 border rounded-lg"
+        >
+          <option value="Chưa chọn">Chưa chọn</option>
+          {selectedProduct.sizes.map(size => (
+            <option key={size} value={size}>{size}</option>
+          ))}
+        </select>
+      </div>
+      <div className="mb-4">
+        <label className="block text-gray-700 mb-2">Màu sắc:</label>
+        <select
+          value={selectedColor}
+          onChange={(e) => setSelectedColor(e.target.value)}
+          className="w-full p-2 border rounded-lg"
+        >
+          <option value="Chưa chọn">Chưa chọn</option>
+          {filteredColorsForSize.length > 0 ? (
+            filteredColorsForSize.map(color => (
+              <option key={color} value={color}>{color}</option>
+            ))
+          ) : (
+            <option disabled>Không có màu nào</option>
+          )}
+        </select>
+      </div>
+      <button
+        onClick={handleAddToCart}
+        className="w-full py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+      >
+        Xác nhận thêm vào giỏ hàng
+      </button>
+    </div>
+  </div>
+)}
     </div>
   );
 };
