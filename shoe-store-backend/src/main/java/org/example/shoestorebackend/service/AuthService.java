@@ -86,8 +86,18 @@ public class AuthService {
         user.setBlocked(false);
         return userRepository.save(user);
     }
+
     // Thêm phương thức mới để lấy danh sách tất cả người dùng
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+    // Thêm phương thức kiểm tra mật khẩu
+    public boolean checkPassword(String rawPassword, String encodedPassword) {
+        return passwordEncoder.matches(rawPassword, encodedPassword);
+    }
+
+    // Thêm phương thức mã hóa mật khẩu
+    public String encodePassword(String rawPassword) {
+        return passwordEncoder.encode(rawPassword);
     }
 }

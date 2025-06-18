@@ -90,4 +90,43 @@ public class ProfileController {
             return ResponseEntity.badRequest().body(Map.of("message", "Lỗi khi cập nhật thông tin hồ sơ: " + e.getMessage()));
         }
     }
+    
+    @PostMapping("/change-password")
+        public ResponseEntity<?> changePassword(@RequestHeader("Authorization") String authorizationHeader,
+                                                @RequestBody Map<String, String> request) {
+        try {
+            if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+                return ResponseEntity.status(401).body(Map.of("message", "Unauthorized: Token không hợp lệ"));
+            }
+
+            String token = authorizationHeader.replace("Bearer ", "");
+            String email = jwtUtil.extractEmail(token);
+            System.out.println("Change Password Request - Email: " + email);
+
+            String currentPassword = request.get("currentPassword");
+            String newPassword = request.get("newPassword");
+
+            if (currentPassword == null || newPassword == null) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Vui lòng cung cấp mật khẩu hiện tại và mật khẩu mới"));
+            }
+
+            User user = authService.getUserByEmail(email);
+
+            // Kiểm tra mật khẩu hiện tại
+            if (!authService.checkPassword(currentPassword, user.getPassword())) {
+                return ResponseEntity.status(401).body(Map.of("message", "Mật khẩu hiện tại không đúng"));
+            }
+
+            // Cập nhật mật khẩu mới
+            user.setPassword(authService.encodePassword(newPassword));
+            authService.updateUser(user);
+
+            return ResponseEntity.ok(Map.of("message", "Đổi mật khẩu thành công"));
+        } catch (Exception e) {
+            System.out.println("Change Password error: " + e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("message", "Lỗi khi đổi mật khẩu: " + e.getMessage()));
+        }
+        }
+
+
 }
