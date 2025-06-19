@@ -125,6 +125,7 @@ public class ProfileController {
             return ResponseEntity.ok(Map.of("message", "Đổi mật khẩu thành công"));
         } catch (Exception e) {
             System.out.println("Change Password error: " + e.getMessage());
+            // Nếu lỗi là do validation, thông báo sẽ được xử lý bởi GlobalExceptionHandler
             return ResponseEntity.badRequest().body(Map.of("message", "Lỗi khi đổi mật khẩu: " + e.getMessage()));
         }
     }
