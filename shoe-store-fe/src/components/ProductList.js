@@ -17,12 +17,17 @@ const ProductList = () => {
   const [selectedSize, setSelectedSize] = useState('Chưa chọn');
   const [selectedColor, setSelectedColor] = useState('Chưa chọn');
   const [page, setPage] = useState(1);
-  const [limit] = useState(6); // Giới hạn 6 sản phẩm mỗi trang cho từng danh mục
+  const [limit] = useState(8); // Giới hạn 8 sản phẩm mỗi trang cho từng danh mục
   const [totalBasketball, setTotalBasketball] = useState(0);
   const [totalRunning, setTotalRunning] = useState(0);
   const [totalSneaker, setTotalSneaker] = useState(0);
   const [totalPickleball, setTotalPickleball] = useState(0);
   const [filteredColorsForSize, setFilteredColorsForSize] = useState([]);
+  const [pageBasketball, setPageBasketball] = useState(1);
+  const [pageRunning, setPageRunning] = useState(1);
+  const [pageSneaker, setPageSneaker] = useState(1);
+  const [pagePickleball, setPagePickleball] = useState(1);
+
 
 
   const navigate = useNavigate();
@@ -32,10 +37,10 @@ const ProductList = () => {
   const adultSizes = ['36', '37', '38', '39', '40', '41', '42', '43', '44', '45'];
   const kidSizes = ['33', '34', '35', '36', '37', '38', '39', '40'];
 
-  const fetchProductsByCategory = async (category, setState, setTotal) => {
+  const fetchProductsByCategory = async (category, setState, setTotal, pageToFetch = 1) => {
     try {
       const url = new URL(`http://localhost:8080/api/products/category/${encodeURIComponent(category)}`);
-      url.searchParams.append('page', page - 1); // API dùng page bắt đầu từ 0
+      url.searchParams.append('page', pageToFetch - 1); // API dùng page bắt đầu từ 0
       url.searchParams.append('size', limit);
 
       const response = await fetch(url);
@@ -102,6 +107,22 @@ const ProductList = () => {
     const uniqueColors = [...new Set(matchingColors)];
     setFilteredColorsForSize(uniqueColors);
   }, [selectedSize, selectedProduct]);
+  useEffect(() => {
+    fetchProductsByCategory('Giày Bóng Rổ', setBasketballShoes, setTotalBasketball, pageBasketball);
+  }, [pageBasketball]);
+  
+  useEffect(() => {
+    fetchProductsByCategory('Giày Chạy Bộ', setRunningShoes, setTotalRunning, pageRunning);
+  }, [pageRunning]);
+  
+  useEffect(() => {
+    fetchProductsByCategory('Giày Thể Thao Sneaker', setSneakerShoes, setTotalSneaker, pageSneaker);
+  }, [pageSneaker]);
+  
+  useEffect(() => {
+    fetchProductsByCategory('Giày Pickleball', setPickleballShoes, setTotalPickleball, pagePickleball);
+  }, [pagePickleball]);
+  
 
   const handleProductClick = (product) => {
     navigate(`/products/${product.id}`, { state: { product } });
@@ -147,7 +168,7 @@ const ProductList = () => {
     closeModal();
   };
 
-  const renderProductSection = (title, productList, total) => (
+  const renderProductSection = (title, productList, total, page, setPage) => (
     productList.length > 0 && (
       <div className="mb-12">
         <div className="flex justify-between items-center mb-6">
@@ -196,6 +217,8 @@ const ProductList = () => {
             );
           })}
         </div>
+  
+        {/* 👇 CHỈNH PHẦN NÀY: dùng page & setPage từ props */}
         {Math.ceil(total / limit) > 1 && (
           <div className="flex justify-center mt-4">
             <button
@@ -218,6 +241,7 @@ const ProductList = () => {
       </div>
     )
   );
+  
 
   if (loading) {
     return <div className="p-6 text-center text-gray-600">Đang tải sản phẩm...</div>;
@@ -229,10 +253,11 @@ const ProductList = () => {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      {renderProductSection('Giày Bóng Rổ', basketballShoes, totalBasketball)}
-      {renderProductSection('Giày Chạy Bộ', runningShoes, totalRunning)}
-      {renderProductSection('Giày Thể Thao Sneaker', sneakerShoes, totalSneaker)}
-      {renderProductSection('Giày Pickleball', pickleballShoes, totalPickleball)}
+      {renderProductSection('Giày Bóng Rổ', basketballShoes, totalBasketball, pageBasketball, setPageBasketball)}
+      {renderProductSection('Giày Chạy Bộ', runningShoes, totalRunning, pageRunning, setPageRunning)}
+      {renderProductSection('Giày Thể Thao Sneaker', sneakerShoes, totalSneaker, pageSneaker, setPageSneaker)}
+      {renderProductSection('Giày Pickleball', pickleballShoes, totalPickleball, pagePickleball, setPagePickleball)}
+
       <ToastContainer />
 
       {isModalOpen && selectedProduct && (
