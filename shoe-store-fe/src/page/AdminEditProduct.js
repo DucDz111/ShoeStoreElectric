@@ -58,14 +58,39 @@ const AdminEditProduct = () => {
     };
     fetchProduct();
   }, [id]);
+  const getSizeRangeByGender = (gender) => {
+    switch (gender) {
+      case 'tre_em':
+        return Array.from({ length: 40 - 33 + 1 }, (_, i) => (33 + i).toString());
+      case 'nam':
+      case 'nu':
+      default:
+        return Array.from({ length: 45 - 36 + 1 }, (_, i) => (36 + i).toString());
+    }
+  };
+  useEffect(() => {
+    if (product?.gender) {
+      const validSizes = getSizeRangeByGender(product.gender);
+      // Lọc lại các size phù hợp với gender mới
+      setEditingSizes((prev) => prev.filter((size) => validSizes.includes(size)));
+  
+      // Lọc lại variant cũng phải thuộc size hợp lệ
+      setEditingVariants((prev) =>
+        prev.filter((variant) => validSizes.includes(variant.size))
+      );
+    }
+  }, [product?.gender]);
+  
+  
 
   const handleUpdateProduct = async (e) => {
     e.preventDefault();
+    setLoading(true); // Thêm dòng này
     try {
       const token = localStorage.getItem('token');
       const productToUpdate = {
         ...product,
-        price: parseFloat(product.price.replace(/\./g, '')), // Loại bỏ dấu chấm trước khi lưu
+        price: parseFloat(String(product.price).replace(/\./g, '')),
         sizes: editingSizes.map((size) => ({ size })),
         colors: editingColors.map((color) => ({ color })),
         variants: editingVariants.map((variant) => ({
@@ -77,7 +102,7 @@ const AdminEditProduct = () => {
 
       const formData = new FormData();
       formData.append("product", new Blob([JSON.stringify(productToUpdate)], { type: "application/json" }));
-      if (newImageFile) {
+      if (newImageFile && newImageFile instanceof File) {
         formData.append("image", newImageFile);
       }
 
@@ -228,15 +253,21 @@ const AdminEditProduct = () => {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Giới tính</label>
               <select
-                value={product.gender}
-                onChange={(e) => setProduct({ ...product, gender: e.target.value })}
-                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              >
-                <option value="nam">Nam</option>
-                <option value="nu">Nữ</option>
-                <option value="tre_em">Trẻ em</option>
-              </select>
+  value={product.gender}
+  onChange={(e) =>
+    setProduct((prev) => ({
+      ...prev,
+      gender: e.target.value,
+    }))
+  }
+  className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+  required
+>
+  <option value="nam">Nam</option>
+  <option value="nu">Nữ</option>
+  <option value="tre_em">Trẻ em</option>
+</select>
+
             </div>
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">Kích thước & Biến thể</label>
@@ -310,27 +341,29 @@ const AdminEditProduct = () => {
                   </div>
                 ))}
                 <select
-                  onChange={(e) => {
-                    const size = e.target.value;
-                    if (size && !editingSizes.includes(size)) {
-                      setEditingSizes([...editingSizes, size]);
-                    }
-                  }}
-                  className="px-2 py-1 border rounded"
-                >
-                  <option value="">Chọn kích thước</option>
-                  {Array.from({ length: 45 - 37 + 1 }, (_, i) => 37 + i)
-                    .filter((size) => !editingSizes.includes(size.toString()))
-                    .map((size) => (
-                      <option key={size} value={size}>{size}</option>
-                    ))}
-                </select>
+  onChange={(e) => {
+    const size = e.target.value;
+    if (size && !editingSizes.includes(size)) {
+      setEditingSizes([...editingSizes, size]);
+    }
+  }}
+  className="px-2 py-1 border rounded"
+>
+  <option value="">Chọn kích thước</option>
+  {getSizeRangeByGender(product.gender)
+    .filter((size) => !editingSizes.includes(size))
+    .map((size) => (
+      <option key={size} value={size}>
+        {size}
+      </option>
+    ))}
+</select>
               </div>
             </div>
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">Màu sắc</label>
               <div className="flex gap-2 mb-2">
-                {['Đỏ', 'Trắng', 'Xanh', 'Vàng'].map((color) => (
+                {['Đỏ','Đen', 'Trắng', 'Xanh', 'Vàng'].map((color) => (
                   <label key={color} className="flex items-center">
                     <input
                       type="checkbox"

@@ -36,6 +36,18 @@ const AdminProductPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState(''); // Thêm state cho từ khóa tìm kiếm
 
+  // Hàm lấy range size dựa trên giới tính
+  const getSizeRangeByGender = (gender) => {
+    switch (gender) {
+      case 'tre_em':
+        return Array.from({ length: 40 - 33 + 1 }, (_, i) => (33 + i).toString());
+      case 'nam':
+      case 'nu':
+      default:
+        return Array.from({ length: 45 - 36 + 1 }, (_, i) => (36 + i).toString());
+    }
+  };
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -54,6 +66,13 @@ const AdminProductPage = () => {
     };
     fetchProducts();
   }, [page, limit, searchTerm]); // Cập nhật dependency để bao gồm searchTerm
+
+  useEffect(() => {
+    // Cập nhật danh sách size hợp lệ khi gender thay đổi
+    const validSizes = getSizeRangeByGender(newProduct.gender);
+    setNewSizes((prev) => prev.filter((size) => validSizes.includes(size)));
+    setNewVariants((prev) => prev.filter((variant) => validSizes.includes(variant.size)));
+  }, [newProduct.gender]);
 
   const handleAddProduct = async (e) => {
     e.preventDefault();
@@ -418,10 +437,12 @@ const AdminProductPage = () => {
                         className="px-2 py-1 border rounded"
                       >
                         <option value="">Chọn kích thước</option>
-                        {Array.from({ length: 45 - 37 + 1 }, (_, i) => 37 + i)
-                          .filter((size) => !newSizes.includes(size.toString()))
+                        {getSizeRangeByGender(newProduct.gender)
+                          .filter((size) => !newSizes.includes(size))
                           .map((size) => (
-                            <option key={size} value={size}>{size}</option>
+                            <option key={size} value={size}>
+                              {size}
+                            </option>
                           ))}
                       </select>
                     </div>
@@ -429,7 +450,7 @@ const AdminProductPage = () => {
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-1">Màu sắc</label>
                     <div className="flex gap-2 mb-2">
-                      {['Đỏ', 'Trắng', 'Xanh', 'Vàng'].map((color) => (
+                      {['Đỏ', 'Đen', 'Trắng', 'Xanh', 'Vàng'].map((color) => (
                         <label key={color} className="flex items-center">
                           <input
                             type="checkbox"
