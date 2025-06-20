@@ -172,36 +172,43 @@ const CartPage = () => {
                             />
                             <div>
                               <div className="font-medium">{product.name || "Unnamed Product"}</div>
-                              <label className="block mt-2 text-sm">Kích thước:</label>
-                              <select
-                                  value={selectedSizes[key] || item.size || "Chưa chọn"}
-                                  onChange={(e) =>
-                                      handleSizeChange(product.id, item.size, item.color, e.target.value)
-                                  }
-                                  className="w-full border rounded px-2 py-1"
-                              >
-                                <option value="Chưa chọn">Chưa chọn</option>
-                                {sizes.map((size, idx) => (
-                                    <option key={size + idx} value={size}>
-                                      {size}
-                                    </option>
-                                ))}
-                              </select>
-                              <label className="block mt-2 text-sm">Màu sắc:</label>
-                              <select
-                                  value={selectedColors[key] || item.color || "Chưa chọn"}
-                                  onChange={(e) =>
-                                      handleColorChange(product.id, item.size, item.color, e.target.value)
-                                  }
-                                  className="w-full border rounded px-2 py-1"
-                              >
-                                <option value="Chưa chọn">Chưa chọn</option>
-                                {colors.map((color, idx) => (
-                                    <option key={color + idx} value={color}>
-                                      {color}
-                                    </option>
-                                ))}
-                              </select>
+                              <div className="flex flex-wrap gap-2 mt-2 text-sm">
+  <div className="flex items-center gap-1">
+    <label className="whitespace-nowrap">Size:</label>
+    <select
+      value={selectedSizes[key] || item.size || "Chưa chọn"}
+      onChange={(e) =>
+        handleSizeChange(product.id, item.size, item.color, e.target.value)
+      }
+      className="border rounded px-2 py-1 text-sm w-[100px]"
+    >
+      <option value="Chưa chọn">Chưa chọn</option>
+      {sizes.map((size, idx) => (
+        <option key={size + idx} value={size}>
+          {size}
+        </option>
+      ))}
+    </select>
+  </div>
+
+  <div className="flex items-center gap-1">
+    <label className="whitespace-nowrap">Màu:</label>
+    <select
+      value={selectedColors[key] || item.color || "Chưa chọn"}
+      onChange={(e) =>
+        handleColorChange(product.id, item.size, item.color, e.target.value)
+      }
+      className="border rounded px-2 py-1 text-sm w-[100px]"
+    >
+      <option value="Chưa chọn">Chưa chọn</option>
+      {colors.map((color, idx) => (
+        <option key={color + idx} value={color}>
+          {color}
+        </option>
+      ))}
+    </select>
+  </div>
+</div>
                             </div>
                           </div>
                           <div className="text-right space-y-2">
